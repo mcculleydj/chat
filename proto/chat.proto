@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+option go_package = "github/mcculleydj/chat/pkg/proto";
+
+package chat;
+
+service Chat {
+  rpc Join(User) returns (stream Message);
+  rpc Broadcast(Message) returns (Ack);
+  rpc Leave(User) returns (Ack);
+}
+
+// name will uniquely ID a user
+// will handle collision during Join in the implementation
+// by throwing an error
+message User {
+  string name = 1;
+}
+
+message Message {
+  User user = 1;
+  string content = 2;
+  string timestamp = 3;
+}
+
+// could wrap error payload to allow client to respond
+// intelligently to the error (e.g. retry)
+message Ack {}
