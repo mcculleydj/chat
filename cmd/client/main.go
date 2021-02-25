@@ -35,7 +35,7 @@ func listen(stream proto.Chat_JoinClient, errChan chan error) {
 			errChan <- err
 			return
 		}
-		fmt.Printf("%s | %s - %s\n", msg.User.Name, msg.Timestamp, msg.Content)
+		fmt.Printf("\r%s | %s - %s\n> ", msg.User.Name, msg.Timestamp, msg.Content)
 	}
 }
 
@@ -48,7 +48,7 @@ func talk(client proto.ChatClient, user *proto.User, errChan chan error) {
 				errChan <- err
 				return
 			}
-			errChan <- errors.New("")
+			errChan <- nil
 			return
 		}
 
@@ -92,7 +92,7 @@ func main() {
 	go talk(client, user, errChan)
 
 	err = <-errChan
-	if err.Error() == "" {
+	if err == nil {
 		fmt.Println("Leaving chat...")
 	} else {
 		fmt.Println(err.Error())

@@ -50,7 +50,12 @@ func (s *chatServer) Join(u *proto.User, stream proto.Chat_JoinServer) error {
 	})
 
 	// will block until there is an error calling stream.Send()
-	return <-errChan
+	err := <-errChan
+
+	// remove user from map if they can't be reached
+	s.Leave(context.Background(), u)
+
+	return err
 }
 
 func (s *chatServer) Broadcast(ctx context.Context, msg *proto.Message) (*proto.Ack, error) {

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-PREFIX=github/mcculleydj/chat/pkg
+PREFIX=github.com/mcculleydj/chat/pkg
 BASEDIR=$(dirname "$0")
 cd ${BASEDIR}/../
 
