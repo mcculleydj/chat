@@ -5,8 +5,8 @@ option go_package = "github.com/mcculleydj/chat/pkg/proto";
 package chat;
 
 service Chat {
-  rpc Join(User) returns (stream Message);
-  rpc Broadcast(Message) returns (Ack);
+  rpc Join(User) returns (stream BroadcastMessage);
+  rpc Broadcast(SendMessage) returns (Ack);
   rpc Leave(User) returns (Ack);
 }
 
@@ -17,7 +17,12 @@ message User {
   string name = 1;
 }
 
-message Message {
+message SendMessage {
+  User user = 1;
+  string content = 2;
+}
+
+message BroadcastMessage {
   User user = 1;
   string content = 2;
   string timestamp = 3;

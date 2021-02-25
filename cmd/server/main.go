@@ -43,10 +43,9 @@ func (s *chatServer) Join(u *proto.User, stream proto.Chat_JoinServer) error {
 	// TODO: what to do with context?
 
 	// TODO: what to do if this fails?
-	s.Broadcast(context.Background(), &proto.Message{
-		User:      bot,
-		Content:   fmt.Sprintf("%s has joined...", u.Name),
-		Timestamp: time.Now().Format("15:04:05"),
+	s.Broadcast(context.Background(), &proto.SendMessage{
+		User:    bot,
+		Content: fmt.Sprintf("%s has joined...", u.Name),
 	})
 
 	// will block until there is an error calling stream.Send()
@@ -58,7 +57,7 @@ func (s *chatServer) Join(u *proto.User, stream proto.Chat_JoinServer) error {
 	return err
 }
 
-func (s *chatServer) Broadcast(ctx context.Context, msg *proto.Message) (*proto.Ack, error) {
+func (s *chatServer) Broadcast(ctx context.Context, msg *proto.SendMessage) (*proto.Ack, error) {
 	// TODO: what to do with context?
 
 	s.Lock()
@@ -68,7 +67,11 @@ func (s *chatServer) Broadcast(ctx context.Context, msg *proto.Message) (*proto.
 			if thisName == msg.User.Name {
 				return
 			}
-			err := thisConn.stream.Send(msg)
+			err := thisConn.stream.Send(&proto.BroadcastMessage{
+				User:      msg.User,
+				Content:   msg.Content,
+				Timestamp: time.Now().Format("15:04:05"),
+			})
 			if err != nil {
 				fmt.Printf("error sending to %s: %v\n", thisName, err)
 				thisConn.errChan <- err
@@ -87,10 +90,9 @@ func (s *chatServer) Leave(ctx context.Context, u *proto.User) (*proto.Ack, erro
 	delete(s.connections, u.Name)
 	s.Unlock()
 
-	return s.Broadcast(context.Background(), &proto.Message{
-		User:      bot,
-		Content:   fmt.Sprintf("%s has left...", u.Name),
-		Timestamp: time.Now().Format("15:04:05"),
+	return s.Broadcast(context.Background(), &proto.SendMessage{
+		User:    bot,
+		Content: fmt.Sprintf("%s has left...", u.Name),
 	})
 }
 

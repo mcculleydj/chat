@@ -10,7 +10,6 @@ import (
 	"log"
 	"os"
 	"strings"
-	"time"
 
 	"github.com/mcculleydj/chat/pkg/proto"
 
@@ -52,10 +51,9 @@ func talk(client proto.ChatClient, user *proto.User, errChan chan error) {
 			return
 		}
 
-		_, err := client.Broadcast(context.Background(), &proto.Message{
-			User:      user,
-			Content:   scanner.Text(),
-			Timestamp: time.Now().Format("15:04:05"),
+		_, err := client.Broadcast(context.Background(), &proto.SendMessage{
+			User:    user,
+			Content: scanner.Text(),
 		})
 		if err != nil {
 			log.Println("error sending msg:", err.Error())

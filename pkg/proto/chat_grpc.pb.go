@@ -19,7 +19,7 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ChatClient interface {
 	Join(ctx context.Context, in *User, opts ...grpc.CallOption) (Chat_JoinClient, error)
-	Broadcast(ctx context.Context, in *Message, opts ...grpc.CallOption) (*Ack, error)
+	Broadcast(ctx context.Context, in *SendMessage, opts ...grpc.CallOption) (*Ack, error)
 	Leave(ctx context.Context, in *User, opts ...grpc.CallOption) (*Ack, error)
 }
 
@@ -47,7 +47,7 @@ func (c *chatClient) Join(ctx context.Context, in *User, opts ...grpc.CallOption
 }
 
 type Chat_JoinClient interface {
-	Recv() (*Message, error)
+	Recv() (*BroadcastMessage, error)
 	grpc.ClientStream
 }
 
@@ -55,15 +55,15 @@ type chatJoinClient struct {
 	grpc.ClientStream
 }
 
-func (x *chatJoinClient) Recv() (*Message, error) {
-	m := new(Message)
+func (x *chatJoinClient) Recv() (*BroadcastMessage, error) {
+	m := new(BroadcastMessage)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
 	return m, nil
 }
 
-func (c *chatClient) Broadcast(ctx context.Context, in *Message, opts ...grpc.CallOption) (*Ack, error) {
+func (c *chatClient) Broadcast(ctx context.Context, in *SendMessage, opts ...grpc.CallOption) (*Ack, error) {
 	out := new(Ack)
 	err := c.cc.Invoke(ctx, "/chat.Chat/Broadcast", in, out, opts...)
 	if err != nil {
@@ -86,7 +86,7 @@ func (c *chatClient) Leave(ctx context.Context, in *User, opts ...grpc.CallOptio
 // for forward compatibility
 type ChatServer interface {
 	Join(*User, Chat_JoinServer) error
-	Broadcast(context.Context, *Message) (*Ack, error)
+	Broadcast(context.Context, *SendMessage) (*Ack, error)
 	Leave(context.Context, *User) (*Ack, error)
 	mustEmbedUnimplementedChatServer()
 }
@@ -98,7 +98,7 @@ type UnimplementedChatServer struct {
 func (UnimplementedChatServer) Join(*User, Chat_JoinServer) error {
 	return status.Errorf(codes.Unimplemented, "method Join not implemented")
 }
-func (UnimplementedChatServer) Broadcast(context.Context, *Message) (*Ack, error) {
+func (UnimplementedChatServer) Broadcast(context.Context, *SendMessage) (*Ack, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Broadcast not implemented")
 }
 func (UnimplementedChatServer) Leave(context.Context, *User) (*Ack, error) {
@@ -126,7 +126,7 @@ func _Chat_Join_Handler(srv interface{}, stream grpc.ServerStream) error {
 }
 
 type Chat_JoinServer interface {
-	Send(*Message) error
+	Send(*BroadcastMessage) error
 	grpc.ServerStream
 }
 
@@ -134,12 +134,12 @@ type chatJoinServer struct {
 	grpc.ServerStream
 }
 
-func (x *chatJoinServer) Send(m *Message) error {
+func (x *chatJoinServer) Send(m *BroadcastMessage) error {
 	return x.ServerStream.SendMsg(m)
 }
 
 func _Chat_Broadcast_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Message)
+	in := new(SendMessage)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -151,7 +151,7 @@ func _Chat_Broadcast_Handler(srv interface{}, ctx context.Context, dec func(inte
 		FullMethod: "/chat.Chat/Broadcast",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ChatServer).Broadcast(ctx, req.(*Message))
+		return srv.(ChatServer).Broadcast(ctx, req.(*SendMessage))
 	}
 	return interceptor(ctx, in, info, handler)
 }
