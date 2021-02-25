@@ -61,6 +61,7 @@ func talk(client proto.ChatClient, user *proto.User, errChan chan error) {
 			log.Println("error sending msg:", err.Error())
 			errChan <- err
 		}
+		fmt.Printf("> ")
 	}
 }
 
