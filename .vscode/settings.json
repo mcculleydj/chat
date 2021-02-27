@@ -1,0 +1,6 @@
+{   
+    // allows for type hints and autocomplete for the python generated proto files
+    "python.analysis.extraPaths": [
+        "py"
+    ],
+}
