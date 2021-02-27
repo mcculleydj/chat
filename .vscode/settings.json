@@ -1,0 +1,6 @@
+{   
+    // allows for import resolution
+    "python.analysis.extraPaths": [
+        "py"
+    ],
+}
