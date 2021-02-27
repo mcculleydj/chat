@@ -1,5 +1,5 @@
 {   
-    // allows for type hints and autocomplete for the python generated proto files
+    // allows for import resolution
     "python.analysis.extraPaths": [
         "py"
     ],
